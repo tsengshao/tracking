@@ -40,6 +40,7 @@ INTEGER              :: cell_age1(max_no_of_cells,2), cell_age2(max_no_of_cells,
 INTEGER              :: first_point_x(max_no_of_cells,2),first_point_y(max_no_of_cells,2)
 INTEGER              :: xfirst(max_no_of_cells,2), xlast(max_no_of_cells,2)
 INTEGER              :: yfirst(max_no_of_cells,2), ylast(max_no_of_cells,2)
+INTEGER              :: checkcounter
 
 ! variables for the overlay field
 INTEGER              :: xfirst_mixed,xlast_mixed,yfirst_mixed,ylast_mixed
@@ -174,30 +175,38 @@ ENDDO
 occupied(:,:)=.FALSE.
 event_number(:,:,n_actual)=0
 counter_previous = MAX(1,counter_actual)
-counter_actual=1
+counter_actual=0
+
 
 ! identification of patches
 DO iy=1, domainsize_y
   DO ix=1, domainsize_x
     IF (input_field(ix,iy,1) .GE. threshold .AND. .NOT. occupied(ix,iy)) THEN
+      counter_actual = counter_actual+1
       IF (counter_actual .GT. max_no_of_cells) THEN
         WRITE(*,*) "ERROR: number of cells >",max_no_of_cells
         STOP
       ENDIF
-      ii = ix
-      ij = iy
-      totarea(counter_actual,n_actual)=0
-      field_mean(counter_actual,n_actual,:)=0
-      field_min(counter_actual,n_actual,:)=1E+9
-      field_max(counter_actual,n_actual,:)=-1E+9
-      center_of_mass_x(counter_actual,n_actual)=0
-      center_of_mass_y(counter_actual,n_actual)=0
-      xfirst(counter_actual,n_actual)=ii
-      xlast(counter_actual,n_actual)=ii
-      yfirst(counter_actual,n_actual)=ij
-      ylast(counter_actual,n_actual)=ij
-      delete_cell = .FALSE.
-      CALL area(ii, ij, input_field, &
+      !!  ii = ix
+      !!  ij = iy
+      !!  totarea(counter_actual,n_actual)=0
+      !!  field_mean(counter_actual,n_actual,:)=0
+      !!  field_min(counter_actual,n_actual,:)=1E+9
+      !!  field_max(counter_actual,n_actual,:)=-1E+9
+      !!  center_of_mass_x(counter_actual,n_actual)=0
+      !!  center_of_mass_y(counter_actual,n_actual)=0
+      !!  xfirst(counter_actual,n_actual)=ii
+      !!  xlast(counter_actual,n_actual)=ii
+      !!  yfirst(counter_actual,n_actual)=ij
+      !!  ylast(counter_actual,n_actual)=ij
+      !!  delete_cell = .FALSE.
+      !!  CALL area(ii, ij, input_field, &
+      !!     occupied, counter_actual,event_number(:,:,n_actual),totarea(counter_actual,n_actual), &
+      !!     field_mean(counter_actual,n_actual,:),field_min(counter_actual,n_actual,:),field_max(counter_actual,n_actual,:), &
+      !!     center_of_mass_x(counter_actual,n_actual),center_of_mass_y(counter_actual,n_actual), &
+      !!     delete_cell,xfirst(counter_actual,n_actual),xlast(counter_actual,n_actual), &
+      !!     yfirst(counter_actual,n_actual),ylast(counter_actual,n_actual))
+      CALL four_connect(ix, iy, input_field, &
          occupied, counter_actual,event_number(:,:,n_actual),totarea(counter_actual,n_actual), &
          field_mean(counter_actual,n_actual,:),field_min(counter_actual,n_actual,:),field_max(counter_actual,n_actual,:), &
          center_of_mass_x(counter_actual,n_actual),center_of_mass_y(counter_actual,n_actual), &
@@ -208,6 +217,7 @@ DO iy=1, domainsize_y
         CALL set_event_number_to_value(domainsize_x,domainsize_y,-1,event_number(:,:,n_actual),counter_actual, &
                                        xfirst(counter_actual,n_actual),xlast(counter_actual,n_actual), &
                                        yfirst(counter_actual,n_actual),ylast(counter_actual,n_actual))
+        counter_actual = counter_actual - 1
       ELSEIF (totarea(counter_actual,n_actual) .GT. minimum_size) THEN
         center_of_mass_x(counter_actual,n_actual)=center_of_mass_x(counter_actual,n_actual)/ &
                                                   field_mean(counter_actual,n_actual,1)
@@ -220,13 +230,13 @@ DO iy=1, domainsize_y
         IF (center_of_mass_x(counter_actual,n_actual) .GE. domainsize_x+1) THEN
           center_of_mass_x(counter_actual,n_actual)=center_of_mass_x(counter_actual,n_actual)-domainsize_x
         ENDIF
-        IF (center_of_mass_x(counter_actual,n_actual) .LE. 1) THEN
+        IF (center_of_mass_x(counter_actual,n_actual) .LT. 1) THEN
           center_of_mass_x(counter_actual,n_actual)=center_of_mass_x(counter_actual,n_actual)+domainsize_x
         ENDIF
         IF (center_of_mass_y(counter_actual,n_actual) .GE. domainsize_y+1) THEN
           center_of_mass_y(counter_actual,n_actual)=center_of_mass_y(counter_actual,n_actual)-domainsize_y
         ENDIF
-        IF (center_of_mass_y(counter_actual,n_actual) .LE. 1) THEN
+        IF (center_of_mass_y(counter_actual,n_actual) .LT. 1) THEN
           center_of_mass_y(counter_actual,n_actual)=center_of_mass_y(counter_actual,n_actual)+domainsize_y
         ENDIF
         
@@ -234,16 +244,19 @@ DO iy=1, domainsize_y
         first_point_y(counter_actual,n_actual)=iy
         cell_age1(counter_actual,n_actual)=1   ! new born cell. Will be adjusted later
         cell_age2(counter_actual,n_actual)=1
-        counter_actual=counter_actual+1
       ELSE   ! if cell is too small, delete it
-      CALL set_event_number_to_value(domainsize_x,domainsize_y,0,event_number(:,:,n_actual),counter_actual, &
-                                     xfirst(counter_actual,n_actual),xlast(counter_actual,n_actual), &
-                                     yfirst(counter_actual,n_actual),ylast(counter_actual,n_actual))
+        CALL set_event_number_to_value(domainsize_x,domainsize_y,0,event_number(:,:,n_actual),counter_actual, &
+                                       xfirst(counter_actual,n_actual),xlast(counter_actual,n_actual), &
+                                       yfirst(counter_actual,n_actual),ylast(counter_actual,n_actual))
+        counter_actual = counter_actual - 1
       ENDIF
+    ELSE
+      occupied(ix,iy)=.TRUE.
     ENDIF
   ENDDO
 ENDDO
 
+WRITE(*,*) 't=',previoustimestep+1,'(total_obj=',counter_actual,')'
 
 !! write the mask 2d fields
 CALL write_dat(30,previoustimestep+1,REAL(event_number(:,:,n_actual)))
@@ -287,7 +300,6 @@ ELSE
   n_previous_it = n_previous
 ENDIF
 
-WRITE (*,*) 'timestep:',previoustimestep
 
 ! identify foreward links and velocity
 largest_forward_link=0
@@ -347,14 +359,14 @@ IF (counter_previous==1) THEN
   !ENDIF
   WRITE(20,*) previoustimestep,0,counter_total_previous+i, &
               cell_age1(1,n_previous),cell_age2(1,n_previous),totarea(1,n_previous), &
-	      field_mean(1,n_previous,:),field_min(1,n_previous,:),field_max(1,n_previous,:), &
-	      xfirst(1,n_previous),xlast(1,n_previous),yfirst(1,n_previous),ylast(1,n_previous), &
-	      center_of_mass_x(1,n_previous),center_of_mass_y(1,n_previous), &
-	      velocity_x(1),velocity_y(1), &
-	      largest_forward_link(1),largest_forward_link_size(1), &
-	      second_largest_forward_link(1),second_largest_forward_link_size(1), &
-	      largest_backward_link(1),largest_backward_link_size(1), &
-	      second_largest_backward_link(1),second_largest_backward_link_size(1)
+              field_mean(1,n_previous,:),field_min(1,n_previous,:),field_max(1,n_previous,:), &
+              xfirst(1,n_previous),xlast(1,n_previous),yfirst(1,n_previous),ylast(1,n_previous), &
+              center_of_mass_x(1,n_previous),center_of_mass_y(1,n_previous), &
+              velocity_x(1),velocity_y(1), &
+              largest_forward_link(1),largest_forward_link_size(1), &
+              second_largest_forward_link(1),second_largest_forward_link_size(1), &
+              largest_backward_link(1),largest_backward_link_size(1), &
+              second_largest_backward_link(1),second_largest_backward_link_size(1)
 ENDIF
 DO i=1,counter_previous-1
   !IF (cell_age1(i,n_previous).LT.cell_age2(i,n_previous)) THEN
@@ -362,14 +374,14 @@ DO i=1,counter_previous-1
   !ENDIF
   WRITE(20,*) previoustimestep,i,counter_total_previous+i, &
               cell_age1(i,n_previous),cell_age2(i,n_previous),totarea(i,n_previous), &
-	      field_mean(i,n_previous,:),field_min(i,n_previous,:),field_max(i,n_previous,:), &
-	      xfirst(i,n_previous),xlast(i,n_previous),yfirst(i,n_previous),ylast(i,n_previous), &
-	      center_of_mass_x(i,n_previous),center_of_mass_y(i,n_previous), &
-	      velocity_x(i),velocity_y(i), &
-	      largest_forward_link(i),largest_forward_link_size(i), &
-	      second_largest_forward_link(i),second_largest_forward_link_size(i), &
-	      largest_backward_link(i),largest_backward_link_size(i), &
-	      second_largest_backward_link(i),second_largest_backward_link_size(i)
+              field_mean(i,n_previous,:),field_min(i,n_previous,:),field_max(i,n_previous,:), &
+              xfirst(i,n_previous),xlast(i,n_previous),yfirst(i,n_previous),ylast(i,n_previous), &
+              center_of_mass_x(i,n_previous),center_of_mass_y(i,n_previous), &
+              velocity_x(i),velocity_y(i), &
+              largest_forward_link(i),largest_forward_link_size(i), &
+              second_largest_forward_link(i),second_largest_forward_link_size(i), &
+              largest_backward_link(i),largest_backward_link_size(i), &
+              second_largest_backward_link(i),second_largest_backward_link_size(i)
 ENDDO
 
 ! identify backward links
@@ -377,41 +389,6 @@ largest_backward_link=0
 largest_backward_link_size=0
 second_largest_backward_link=0
 second_largest_backward_link_size=0
-!DO i=1,counter_actual-1
-!  a = event_number(first_point_x(i,n_actual),first_point_y(i,n_actual),3)
-!  IF (a==0) THEN
-!    largest_backward_link(i) = -1    ! track interrupted by missing values
-!    !WRITE(*,*) "value 0:",first_point_x(i,n_actual),first_point_y(i,n_actual)
-!    CYCLE
-!  ENDIF
-!  !IF (a==0) THEN
-!  !  WRITE(*,*) "value -1:",first_point_x(i,n_actual),first_point_y(i,n_actual)
-!  !ENDIF
-!  DO j=1,counter_previous-1
-!    b = event_number(first_point_x(j,n_previous),first_point_y(j,n_previous),3)
-!    IF (b==0) CYCLE
-!    IF (a==b) THEN 
-!      ! object inherits age from oldest predecessor
-!      IF (cell_age1(j,n_previous) .GE. cell_age1(i,n_actual)) THEN
-!        cell_age1(i,n_actual)=cell_age1(j,n_previous)+1 ! aging cell
-!      ENDIF
-!      IF (totarea(j,n_previous) .GT. largest_backward_link_size(i)) THEN
-!        second_largest_backward_link(i) = largest_backward_link(i)
-!	second_largest_backward_link_size(i) = largest_backward_link_size(i)
-!	largest_backward_link(i) = counter_total_previous+j
-!	largest_backward_link_size(i) = totarea(j,n_previous)
-!        ! object inherits age from largest predecessor
-!        cell_age2(i,n_actual)=cell_age2(j,n_previous)+1 ! aging cell
-!      ELSEIF (totarea(j,n_previous) .GT. second_largest_backward_link_size(i)) THEN
-!	second_largest_backward_link(i) = counter_total_previous+j
-!	second_largest_backward_link_size(i) = totarea(j,n_previous)
-!      ENDIF
-!    ENDIF
-!  ENDDO
-!  !IF (cell_age1(i,n_actual).LT.cell_age2(i,n_actual)) THEN
-!  !  WRITE(*,*) "cell age:",cell_age1(i,n_actual),cell_age2(i,n_actual)
-!  !ENDIF
-!ENDDO
 velocity_x = 0.
 velocity_y = 0.
 area_weight = 0.
@@ -564,10 +541,126 @@ END SUBROUTINE decrease_resolution
 
 !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+SUBROUTINE four_connect(startX, startY, input_field, occupied, nowid,&
+                        label_field, totarea, field_mean, field_min, field_max,&
+                        COMx, COMy, delete_cell, xfirst, xlast, yfirst, ylast)
+
+USE irt_parameters, ONLY: n_fields, threshold, miss, llonlatgrid, &
+                          unit_area, lat_first, lat_inc, lon_inc, &
+                          lperiodic_x, lperiodic_y, domainsize_x, domainsize_y
+
+REAL, intent(in)    :: input_field(domainsize_x,domainsize_y,n_fields+1)
+INTEGER, intent(inout) :: label_field(domainsize_x,domainsize_y)
+INTEGER, intent(in) :: startX, startY, nowid
+LOGICAL, intent(inout) :: occupied(domainsize_x,domainsize_y)
+
+REAL, intent(out) :: totarea, field_mean(n_fields+1)
+REAL, intent(out) :: field_min(n_fields+1), field_max(n_fields+1)
+REAL, intent(out) :: COMx, COMy
+LOGICAL, intent(out) :: delete_cell
+INTEGER, intent(out) :: xfirst, xlast, yfirst, ylast
+
+INTEGER, parameter :: GRIDSIZE=domainsize_x*domainsize_x
+INTEGER            :: stackX(GRIDSIZE),stackY(GRIDSIZE), stack_num
+REAL               :: gridboxarea
+INTEGER            :: fileid
+REAL, PARAMETER    :: deg2rad = 3.141592654/180.
+
+INTEGER, PARAMETER :: nmove=4
+INTEGER, PARAMETER :: moveX(nmove)=(/0,0,-1,1/)
+INTEGER, PARAMETER :: moveY(nmove)=(/-1,1,0,0/)
+
+INTEGER             :: iox, ioy, imove, iox2, ioy2
+
+IF(input_field(startX,startY,1) .lt. threshold .or. occupied(startX,startY)) then
+  stop ' !!SUBROUTINE refill_obj !! ERROR : label_field(startX,startY) .le. 0 or occupied'
+endif
+
+totarea = 0.
+field_mean(:) = 0.
+field_min(:) = +9e10
+field_max(:) = -9e10
+COMx = 0.
+COMy = 0.
+delete_cell = .FALSE.
+xfirst = startX
+xlast = startX
+yfirst = startY
+ylast = startY
+
+stackX(1)=startX
+stackY(1)=startY
+stack_num = 1
+do while( stack_num .GT. 0)
+  iox = stackX(stack_num)
+  ioy = stackY(stack_num)
+  stack_num = stack_num - 1
+  if (input_field(iox,ioy,1).lt.threshold) cycle
+
+  ! start to calculate properties
+
+  ! create the size of a gridbox
+  IF (llonlatgrid) THEN
+    ! area in km^2
+    gridboxarea = lon_inc*lat_inc*unit_area*COS((lat_first+ioy*lat_inc)*deg2rad)
+  ELSE
+    gridboxarea = unit_area
+  ENDIF
+
+  occupied(iox,ioy) = .True.
+  label_field(iox,ioy) = nowid
+  totarea = totarea + gridboxarea
+  COMx = COMx + iox*input_field(iox,ioy,1)*gridboxarea
+  COMy = COMy + ioy*input_field(iox,ioy,1)*gridboxarea
+
+  xfirst = MIN(iox,xfirst)
+  xlast  = MAX(iox,xlast)
+  yfirst = MIN(ioy,yfirst)
+  ylast  = MAX(ioy,ylast)
+
+  DO fieldid=1,n_fields+1
+    field_mean(fieldid) = field_mean(fieldid)  + input_field(iox,ioy,fieldid)*gridboxarea
+    field_min(fieldid)  = MIN(field_min(fieldid),input_field(iox,ioy,fieldid))
+    field_max(fieldid)  = MAX(field_max(fieldid),input_field(iox,ioy,fieldid))
+  ENDDO
+
+  ! check touch miss or boundary
+  if (.not. delete_cell) then
+    DO imove=1,nmove
+      iox2 = iox + moveX(imove)
+      ioy2 = ioy + moveY(imove)
+      if(input_field(iox2,ioy2,1) .le.miss) delete_cell=.True.; exit
+      if((.not. lperiodic_x) .and.&
+         (iox2>domainsize_x .or. iox2<1)) delete_cell=.True.; exit
+      if((.not. lperiodic_y) .and.&
+         (ioy2>domainsize_y .or. ioy2<1)) delete_cell=.True.; exit
+    ENDDO
+  endif
+
+  do imove=1,nmove
+    iox2 = iox + moveX(imove)
+    ioy2 = ioy + moveY(imove)
+    if(lperiodic_x) iox2 = MOD(iox2-1+domainsize_x,domainsize_x)+1
+    if(lperiodic_y) ioy2 = MOD(ioy2-1+domainsize_y,domainsize_y)+1
+
+    if (iox2 > domainsize_x .or. iox2 < 1) cycle
+    if (ioy2 > domainsize_y .or. ioy2 < 1) cycle
+    if (occupied(iox2,ioy2)) cycle
+    occupied(iox2,ioy2) = .True.
+    stackX(stack_num + 1) = iox2
+    stackY(stack_num + 1) = ioy2
+    stack_num = stack_num + 1.
+  enddo !imove
+enddo   ! stack_num
+
+ENDSUBROUTINE four_connect
+
+!++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 
 RECURSIVE SUBROUTINE area(ii,ij,input_field, &
                   occupied,nevent,event_number,totarea,field_mean,field_min,field_max, &
-		  COMx,COMy,delete_cell,xfirst,xlast,yfirst,ylast)
+		  COMx,COMy,delete_cell,xfirst,xlast,yfirst,ylast,checkcounter)
 
   USE irt_parameters, ONLY: n_fields, threshold, miss, llonlatgrid, &
                             unit_area, lat_first, lat_inc, lon_inc, &
@@ -590,10 +683,13 @@ RECURSIVE SUBROUTINE area(ii,ij,input_field, &
   INTEGER		 :: icell(4), jcell(4)
   !REAL, INTENT(IN)       :: threshold
   LOGICAL, INTENT(INOUT) :: delete_cell
+  INTEGER, INTENT(INOUT) :: checkcounter
 
   REAL, PARAMETER        :: deg2rad = 3.141592654/180.
   REAL                   :: gridboxarea
   
+  checkcounter = checkcounter+1
+  print*, 'checkcounter =',checkcounter
   ii_mod = ii
   ij_mod = ij
   if(lperiodic_x) ii_mod = MOD(ii-1+domainsize_x,domainsize_x)+1
@@ -611,7 +707,7 @@ RECURSIVE SUBROUTINE area(ii,ij,input_field, &
   icell = (/ ii_mod+1, ii_mod  , ii_mod-1, ii_mod  /)
   jcell = (/ ij_mod  , ij_mod+1, ij_mod  , ij_mod-1 /)
 
-  
+  print*, 'FLAG: checkout (ii_mod,ij_mod)=',ii_mod,ij_mod 
   IF (.NOT. occupied(ii_mod,ij_mod)) THEN
      ! take care for periodic boundary conditions:
      IF (ii_mod .LT. xfirst) xfirst = ii_mod
@@ -619,6 +715,8 @@ RECURSIVE SUBROUTINE area(ii,ij,input_field, &
      IF (ij_mod .LT. yfirst) yfirst = ij_mod
      IF (ij_mod .GT. ylast)  ylast  = ij_mod
      occupied(ii_mod,ij_mod) = .TRUE.
+
+     !print*, '..... start_to calcualte variables'
      IF (input_field(ii_mod,ij_mod,1) .GE. threshold) THEN
         ! center of mass is now weighted by intensity!!!
         IF (llonlatgrid) THEN
@@ -640,7 +738,7 @@ RECURSIVE SUBROUTINE area(ii,ij,input_field, &
         DO i=1,4
            CALL area(icell(i),jcell(i),input_field,&
                      occupied,nevent,event_number,totarea,field_mean,field_min,field_max, &
-                     COMx,COMy,delete_cell,xfirst,xlast,yfirst,ylast)
+                     COMx,COMy,delete_cell,xfirst,xlast,yfirst,ylast,checkcounter)
         ENDDO
      ELSEIF (input_field(ii_mod,ij_mod,1) .LE. miss) THEN
         ! if cell touches missing value, this cell will be deleted

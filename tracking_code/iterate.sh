@@ -24,7 +24,7 @@ cd $DATENPFAD
 
   ### Iterate Object Files ###
    ${PFAD}/irt_objects_release.x 1
-   exit
+
    #${PFAD}/irt_advection_field_release.x
    #cp irt_advection_field.srv irt_advection_field_it1.srv
    ##  for ITERATION in 2; do

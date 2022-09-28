@@ -108,7 +108,7 @@ cell_used = .FALSE. ! debug
 
 IF (cell_timestep0 .NE. actual_time) THEN
   actual_time = cell_timestep0
-  WRITE (*,*) actual_time,cell_number0,no_of_tracks, longest_track
+  WRITE (*,*) 'nowts=',actual_time,', num_of_tracks=',no_of_tracks,', longest_track=',longest_track
 ENDIF
 
 ! diagnose ratio_forward
