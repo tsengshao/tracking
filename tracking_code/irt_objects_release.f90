@@ -629,11 +629,16 @@ do while( stack_num .GT. 0)
     DO imove=1,nmove
       iox2 = iox + moveX(imove)
       ioy2 = ioy + moveY(imove)
-      if(input_field(iox2,ioy2,1) .le.miss) delete_cell=.True.; exit
       if((.not. lperiodic_x) .and.&
-         (iox2>domainsize_x .or. iox2<1)) delete_cell=.True.; exit
+         (iox2>domainsize_x .or. iox2<1)) THEN
+         delete_cell=.True.
+         exit
+      ENDIF
       if((.not. lperiodic_y) .and.&
-         (ioy2>domainsize_y .or. ioy2<1)) delete_cell=.True.; exit
+         (ioy2>domainsize_y .or. ioy2<1)) THEN
+        delete_cell=.True.
+        exit
+      ENDIF
     ENDDO
   endif
 
@@ -645,6 +650,10 @@ do while( stack_num .GT. 0)
 
     if (iox2 > domainsize_x .or. iox2 < 1) cycle
     if (ioy2 > domainsize_y .or. ioy2 < 1) cycle
+    if(input_field(iox2,ioy2,1) .le.miss)THEN
+      delete_cell=.True.
+      cycle
+    ENDIF
     if (occupied(iox2,ioy2)) cycle
     occupied(iox2,ioy2) = .True.
     stackX(stack_num + 1) = iox2
