@@ -38,7 +38,6 @@ READ(20,*) readline(1:9)
 DO it=1, time_steps-1
 print*, 'timestep: ',it
 READ(10,rec=it) in_field(:,:)
-print*, readline(2),readline(5)
 
 
 ! reset and create the ID1 table for all variables, 
