@@ -174,7 +174,8 @@ ENDDO
 !! ENDDO
 occupied(:,:)=.FALSE.
 event_number(:,:,n_actual)=0
-counter_previous = MAX(1,counter_actual)
+!counter_previous = MAX(1,counter_actual)
+counter_previous = counter_actual
 counter_actual=0
 
 
@@ -262,7 +263,7 @@ WRITE(*,*) 't=',previoustimestep+1,'(total_obj=',counter_actual,')'
 CALL write_dat(30,previoustimestep+1,REAL(event_number(:,:,n_actual)))
 
 counter_total_previous = counter_total_actual
-counter_total_actual = counter_total_actual+counter_previous-1
+counter_total_actual = counter_total_actual+counter_previous
 
 ! do we have to read in the next step also?
 IF (.NOT. previous_exists) THEN
@@ -341,7 +342,7 @@ DO iy=1, domainsize_y
     ENDIF
   ENDDO
 ENDDO
-DO i=1,counter_previous-1
+DO i=1,counter_previous
   !WRITE(*,*)i,velocity_x(i),velocity_y(i),area_weight(i)
   IF (area_weight(i) .GE. minimum_size) THEN
     velocity_x(i) = velocity_x(i)/area_weight(i)
@@ -353,11 +354,11 @@ DO i=1,counter_previous-1
 ENDDO
 
 ! write sizes
-IF (counter_previous==1) THEN
+IF (counter_previous==0) THEN
   !IF (cell_age1(1,n_previous).LT.cell_age2(1,n_previous)) THEN
   !  WRITE(*,*) "cell age(cp=1):",cell_age1(1,n_previous),cell_age2(1,n_previous)
   !ENDIF
-  WRITE(20,*) previoustimestep,0,counter_total_previous+i, &
+  WRITE(20,*) previoustimestep,0,counter_total_previous, &
               cell_age1(1,n_previous),cell_age2(1,n_previous),totarea(1,n_previous), &
               field_mean(1,n_previous,:),field_min(1,n_previous,:),field_max(1,n_previous,:), &
               xfirst(1,n_previous),xlast(1,n_previous),yfirst(1,n_previous),ylast(1,n_previous), &
@@ -368,7 +369,7 @@ IF (counter_previous==1) THEN
               largest_backward_link(1),largest_backward_link_size(1), &
               second_largest_backward_link(1),second_largest_backward_link_size(1)
 ENDIF
-DO i=1,counter_previous-1
+DO i=1,counter_previous
   !IF (cell_age1(i,n_previous).LT.cell_age2(i,n_previous)) THEN
   !  WRITE(*,*) "cell age:",cell_age1(i,n_previous),cell_age2(i,n_previous)
   !ENDIF
