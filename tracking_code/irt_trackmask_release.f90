@@ -32,14 +32,17 @@ OPEN(10,FILE=trim(input_filename1),FORM='unformatted', ACTION='read',access='dir
 OPEN(20,FILE=trim(input_filename2),FORM='formatted', ACTION='read')
 OPEN(30,FILE=trim(output_filename),FORM='unformatted',ACTION='write',access='direct',recl=lrec)
 
+! read the first line in sorted
+READ(20,*) readline(1:9)
+
 DO it=1, time_steps-1
 print*, 'timestep: ',it
 READ(10,rec=it) in_field(:,:)
+print*, readline(2),readline(5)
 
 
 ! reset and create the ID1 table for all variables, 
 ! and the last readline is the first rows in the next timestep
-READ(20,*) readline(1:9)
 DO
   IF(readline(2)>it) EXIT
   ind = readline(5)
