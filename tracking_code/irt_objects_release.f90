@@ -220,26 +220,27 @@ DO iy=1, domainsize_y
                                        yfirst(counter_actual,n_actual),ylast(counter_actual,n_actual))
         counter_actual = counter_actual - 1
       ELSEIF (totarea(counter_actual,n_actual) .GT. minimum_size) THEN
-        center_of_mass_x(counter_actual,n_actual)=center_of_mass_x(counter_actual,n_actual)/ &
-                                                  field_mean(counter_actual,n_actual,1)
-        center_of_mass_y(counter_actual,n_actual)=center_of_mass_y(counter_actual,n_actual)/ &
-                                                  field_mean(counter_actual,n_actual,1)
-        field_mean(counter_actual,n_actual,:)=field_mean(counter_actual,n_actual,:)/ &
-                                              totarea(counter_actual,n_actual)
+        !! already done in four_connect function
+        !! center_of_mass_x(counter_actual,n_actual)=center_of_mass_x(counter_actual,n_actual)/ &
+        !!                                           field_mean(counter_actual,n_actual,1)
+        !! center_of_mass_y(counter_actual,n_actual)=center_of_mass_y(counter_actual,n_actual)/ &
+        !!                                           field_mean(counter_actual,n_actual,1)
+        !! field_mean(counter_actual,n_actual,:)=field_mean(counter_actual,n_actual,:)/ &
+        !!                                       totarea(counter_actual,n_actual)
         
-        ! take care for periodic boundary conditions
-        IF (center_of_mass_x(counter_actual,n_actual) .GE. domainsize_x+1) THEN
-          center_of_mass_x(counter_actual,n_actual)=center_of_mass_x(counter_actual,n_actual)-domainsize_x
-        ENDIF
-        IF (center_of_mass_x(counter_actual,n_actual) .LT. 1) THEN
-          center_of_mass_x(counter_actual,n_actual)=center_of_mass_x(counter_actual,n_actual)+domainsize_x
-        ENDIF
-        IF (center_of_mass_y(counter_actual,n_actual) .GE. domainsize_y+1) THEN
-          center_of_mass_y(counter_actual,n_actual)=center_of_mass_y(counter_actual,n_actual)-domainsize_y
-        ENDIF
-        IF (center_of_mass_y(counter_actual,n_actual) .LT. 1) THEN
-          center_of_mass_y(counter_actual,n_actual)=center_of_mass_y(counter_actual,n_actual)+domainsize_y
-        ENDIF
+        !! ! take care for periodic boundary conditions
+        !! IF (center_of_mass_x(counter_actual,n_actual) .GE. domainsize_x+1) THEN
+        !!   center_of_mass_x(counter_actual,n_actual)=center_of_mass_x(counter_actual,n_actual)-domainsize_x
+        !! ENDIF
+        !! IF (center_of_mass_x(counter_actual,n_actual) .LT. 1) THEN
+        !!   center_of_mass_x(counter_actual,n_actual)=center_of_mass_x(counter_actual,n_actual)+domainsize_x
+        !! ENDIF
+        !! IF (center_of_mass_y(counter_actual,n_actual) .GE. domainsize_y+1) THEN
+        !!   center_of_mass_y(counter_actual,n_actual)=center_of_mass_y(counter_actual,n_actual)-domainsize_y
+        !! ENDIF
+        !! IF (center_of_mass_y(counter_actual,n_actual) .LT. 1) THEN
+        !!   center_of_mass_y(counter_actual,n_actual)=center_of_mass_y(counter_actual,n_actual)+domainsize_y
+        !! ENDIF
         
         first_point_x(counter_actual,n_actual)=ix
         first_point_y(counter_actual,n_actual)=iy
@@ -571,7 +572,7 @@ INTEGER, PARAMETER :: nmove=4
 INTEGER, PARAMETER :: moveX(nmove)=(/0,0,-1,1/)
 INTEGER, PARAMETER :: moveY(nmove)=(/-1,1,0,0/)
 
-INTEGER             :: iox, ioy, imove, iox2, ioy2
+INTEGER             :: iox, ioy, imove, locx2, locy2, locx, locy
 
 IF(input_field(startX,startY,1) .lt. threshold .or. occupied(startX,startY)) then
   stop ' !!SUBROUTINE refill_obj !! ERROR : label_field(startX,startY) .le. 0 or occupied'
@@ -593,9 +594,12 @@ stackX(1)=startX
 stackY(1)=startY
 stack_num = 1
 do while( stack_num .GT. 0)
-  iox = stackX(stack_num)
-  ioy = stackY(stack_num)
+  locx = stackX(stack_num)
+  locy = stackY(stack_num)
+  iox = MODULO(locx-1+domainsize_x,domainsize_x)+1
+  ioy = MODULO(locy-1+domainsize_y,domainsize_y)+1
   stack_num = stack_num - 1
+
   if (input_field(iox,ioy,1).lt.threshold) cycle
 
   ! start to calculate properties
@@ -611,13 +615,13 @@ do while( stack_num .GT. 0)
   occupied(iox,ioy) = .True.
   label_field(iox,ioy) = nowid
   totarea = totarea + gridboxarea
-  COMx = COMx + iox*input_field(iox,ioy,1)*gridboxarea
-  COMy = COMy + ioy*input_field(iox,ioy,1)*gridboxarea
+  COMx = COMx + locx*input_field(iox,ioy,1)*gridboxarea
+  COMy = COMy + locy*input_field(iox,ioy,1)*gridboxarea
 
-  xfirst = MIN(iox,xfirst)
-  xlast  = MAX(iox,xlast)
-  yfirst = MIN(ioy,yfirst)
-  ylast  = MAX(ioy,ylast)
+  xfirst = MIN(locx,xfirst)
+  xlast  = MAX(locx,xlast)
+  yfirst = MIN(locy,yfirst)
+  ylast  = MAX(locy,ylast)
 
   DO fieldid=1,n_fields+1
     field_mean(fieldid) = field_mean(fieldid)  + input_field(iox,ioy,fieldid)*gridboxarea
@@ -625,43 +629,58 @@ do while( stack_num .GT. 0)
     field_max(fieldid)  = MAX(field_max(fieldid),input_field(iox,ioy,fieldid))
   ENDDO
 
-  ! check touch miss or boundary
-  if (.not. delete_cell) then
-    DO imove=1,nmove
-      iox2 = iox + moveX(imove)
-      ioy2 = ioy + moveY(imove)
-      if((.not. lperiodic_x) .and.&
-         (iox2>domainsize_x .or. iox2<1)) THEN
-         delete_cell=.True.
-         exit
-      ENDIF
-      if((.not. lperiodic_y) .and.&
-         (ioy2>domainsize_y .or. ioy2<1)) THEN
-        delete_cell=.True.
-        exit
-      ENDIF
-    ENDDO
-  endif
-
+  ! check next grid
   do imove=1,nmove
-    iox2 = iox + moveX(imove)
-    ioy2 = ioy + moveY(imove)
-    if(lperiodic_x) iox2 = MOD(iox2-1+domainsize_x,domainsize_x)+1
-    if(lperiodic_y) ioy2 = MOD(ioy2-1+domainsize_y,domainsize_y)+1
+    locx2 = locx + moveX(imove)
+    locy2 = locy + moveY(imove)
+    iox = MODULO(locx2-1+domainsize_x,domainsize_x)+1
+    ioy = MODULO(locy2-1+domainsize_y,domainsize_y)+1
 
-    if (iox2 > domainsize_x .or. iox2 < 1) cycle
-    if (ioy2 > domainsize_y .or. ioy2 < 1) cycle
-    if(input_field(iox2,ioy2,1) .le.miss)THEN
+    ! check touch x boundery
+    if((.not. lperiodic_x) .and.&
+       (locx2>domainsize_x .or. locx2<1)) THEN
+       delete_cell=.True.
+       cycle
+    ENDIF
+
+    ! check touch y boundary
+    if((.not. lperiodic_y) .and.&
+       (locy2>domainsize_y .or. locy2<1)) THEN
       delete_cell=.True.
       cycle
     ENDIF
-    if (occupied(iox2,ioy2)) cycle
-    occupied(iox2,ioy2) = .True.
-    stackX(stack_num + 1) = iox2
-    stackY(stack_num + 1) = ioy2
-    stack_num = stack_num + 1.
+
+    if(iox<=0 .or. ioy<=0 .or. ioy>domainsize_y .or. iox>domainsize_x)then
+      print*, 'MODULO(',locx2,'-1+',domainsize_x,',',domainsize_x,')+1 = ',iox
+      print*, 'MODULO(',locy2,'-1+',domainsize_y,',',domainsize_y,')+1 = ',ioy
+      print*, locx, locx2, iox
+      print*, locy, locy2, ioy
+    endif
+    ! check touch miss
+    if(input_field(iox,ioy,1) .le.miss)THEN
+      delete_cell=.True.
+      cycle
+    ENDIF
+
+    if (occupied(iox,ioy)) cycle
+
+    occupied(iox,ioy) = .True.
+    stackX(stack_num + 1) = locx2
+    stackY(stack_num + 1) = locy2
+    stack_num = stack_num + 1
   enddo !imove
 enddo   ! stack_num
+
+xfirst = MODULO(xfirst-1+domainsize_x,domainsize_x)+1
+xlast  = MODULO(xlast -1+domainsize_x,domainsize_x)+1
+
+yfirst = MODULO(yfirst-1+domainsize_y,domainsize_y)+1
+ylast  = MODULO(ylast -1+domainsize_y,domainsize_y)+1
+
+COMx   = MODULO(COMx/field_mean(1)  -1+real(domainsize_x),real(domainsize_x))+1.
+COMy   = MODULO(COMy/field_mean(1)  -1+real(domainsize_y),real(domainsize_y))+1.
+field_mean(:) = field_mean(:) / totarea
+
 
 ENDSUBROUTINE four_connect
 
