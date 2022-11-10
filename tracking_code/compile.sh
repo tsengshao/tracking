@@ -1,7 +1,10 @@
 #!/bin/bash
 set -ex
 
-COMPILE_COMMAND='ifort -no-wrap-margin -mcmodel=large -check bounds -debug all -traceback -g -shared-intel -free -heap-arrays 10'
+# netcdf configure flag
+# ifort -o ooo.x ooo.f $(nc-config --fflags --flibs)
+
+COMPILE_COMMAND="ifort -no-wrap-margin -mcmodel=large -check bounds -debug all -traceback -g -shared-intel -free -heap-arrays 10 $(nc-config --fflags --flibs)"
 #COMPILE_COMMAND='ifort -no-wrap-margin -mcmodel=large -C -debug all -traceback -shared-intel -free -heap-arrays 10'
 #COMPILE_COMMAND='ifort -no-wrap-margin -mcmodel=large -debug all -traceback -shared-intel -free -heap-arrays 10'
 #COMPILE_COMMAND='gfortran -g -C -O0 -mcmodel=large'
