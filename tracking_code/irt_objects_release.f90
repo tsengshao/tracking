@@ -493,22 +493,37 @@ END SUBROUTINE write_srv
 SUBROUTINE set_event_number_to_value(domainsize_x,domainsize_y,value,event_number,nevent, &
                                      xfirst,xlast,yfirst,ylast)
 
+  USE irt_parameters, ONLY: lperiodic_x, lperiodic_y
+
   IMPLICIT NONE
-  INTEGER, INTENT(IN)	    :: domainsize_x,domainsize_y
+  INTEGER, INTENT(IN)       :: domainsize_x,domainsize_y
   INTEGER, INTENT(IN)       :: value
   INTEGER, INTENT(INOUT)    :: event_number(domainsize_x,domainsize_y)
   INTEGER, INTENT(IN)       :: nevent
   INTEGER, INTENT(IN)       :: xfirst,xlast,yfirst,ylast
   INTEGER                   :: ix,iy,ix_mod,iy_mod
-  
-  DO iy=yfirst,ylast
-    DO ix=xfirst,xlast
+  integer                   :: x1, x2, y1, y2
+
+  x1 = xfirst
+  x2 = xlast
+  y1 = yfirst
+  y2 = ylast
+
+  !! reminding the object over the boundary in periodic condiction
+  if( x2 < x1 .and. lperiodic_x) x2 = x2 + domainsize_x
+  if( y2 < y1 .and. lperiodic_y) y2 = y2 + domainsize_y
+
+  if(x2<x1) STOP "!!! ERROR !!!, func: set_event_number, x2 should be larger than or equal to x1"
+  if(y2<y1) STOP "!!! ERROR !!!, func: set_event_number, y2 should be larger than or equal to y1"
+
+  DO iy=y1,y2
+    DO ix=x1,x2
       ix_mod = MOD(ix-1+domainsize_x,domainsize_x)+1
       iy_mod = MOD(iy-1+domainsize_y,domainsize_y)+1
       IF (event_number(ix_mod,iy_mod)==nevent) event_number(ix_mod,iy_mod)=value
     ENDDO
   ENDDO
-  
+
   RETURN
 
 END SUBROUTINE set_event_number_to_value
