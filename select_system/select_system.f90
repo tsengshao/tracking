@@ -34,7 +34,7 @@ REAL               :: trackmask(domainsize_x,domainsize_y)
 INTEGER            :: indx1, indx2, indy1, indy2
 INTEGER            :: nxout, nyout
 REAL, allocatable  :: trackmaskout(:,:)
-REAL, parameter, DIMENSION(2) :: lonb=(/100,235/), latb=(/-25,25/)
+REAL, parameter, DIMENSION(2) :: lonb=(/90.,235./), latb=(/-25.,25./)
 REAL               :: dummyreal1, dummyreal2
 INTEGER            :: reclraw, reclout
 INTEGER            :: it
@@ -77,6 +77,12 @@ DO
     cvyy(ii)  = cvy(ii)*lat_inc*111000/30/60
 
     ! check
+    !! LAND !!
+    !IF(cduration>1 .and. ctimestep(ii)==cinit_timestep .and.&
+    !   lonb(1)<=clonm(ii) .and. clonm(ii) <= lonb(2) .and.&
+    !   latb(1)<= clatm(ii)  .and. clatm(ii) <= latb(2) .and.&
+    !   clsmm(ii).eq.1) then
+    !! SEA !!
     IF(cduration>1 .and. ctimestep(ii)==cinit_timestep .and.&
        lonb(1)<=clonm(ii) .and. clonm(ii) <= lonb(2) .and.&
        latb(1)<= clatm(ii)  .and. clatm(ii) <= latb(2) .and.&
