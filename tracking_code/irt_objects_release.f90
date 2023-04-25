@@ -151,7 +151,11 @@ previoustime=srv_header_input(4)
 
 input_field(:,:,:) = miss-1.
 DO fileid=1,n_fields+1
-  CALL read_single_dat(input_filename(fileid),previoustimestep+1,input_field(:,:,fileid))
+  !CALL read_single_dat(input_filename(fileid),previoustimestep+1,input_field(:,:,fileid))
+
+  ! read dat file in separate timestep file
+  WRITE(input_filename(fileid),"(A18,I3.3,A)") "GPM_",previoustimestep+1,".dat"
+  CALL read_single_dat(input_filename(fileid),1,input_field(:,:,fileid))
 ENDDO
 
 !!!ORIGINAL srv reader!!!
