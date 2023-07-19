@@ -34,7 +34,8 @@ REAL               :: trackmask(domainsize_x,domainsize_y)
 INTEGER            :: indx1, indx2, indy1, indy2
 INTEGER            :: nxout, nyout
 REAL, allocatable  :: trackmaskout(:,:)
-REAL, parameter, DIMENSION(2) :: lonb=(/90.,235./), latb=(/-25.,25./)
+!REAL, parameter, DIMENSION(2) :: lonb=(/90.,235./), latb=(/-25.,25./)
+REAL, parameter, DIMENSION(2) :: lonb=(/125,200/), latb=(/0.,25./)
 REAL               :: dummyreal1, dummyreal2
 INTEGER            :: reclraw, reclout
 INTEGER            :: it
@@ -139,12 +140,16 @@ dummyreal1=99999999
 dummyreal2=99999999
 DO ix=1,domainsize_x
   lon(ix) = lon_first + lon_inc*(ix-1)
-  IF ( abs(lonb(1)-10-lon(ix)) .lt. dummyreal1 )THEN
-    dummyreal1 = abs(lonb(1)-10-lon(ix))
+  !IF ( abs(lonb(1)-10-lon(ix)) .lt. dummyreal1 )THEN
+    !dummyreal1 = abs(lonb(1)-10-lon(ix))
+  IF ( abs(lonb(1)-5-lon(ix)) .lt. dummyreal1 )THEN
+    dummyreal1 = abs(lonb(1)-5-lon(ix))
     indx1=ix
   ENDIF
-  IF ( abs(lonb(2)+10-lon(ix)) .lt. dummyreal2 )THEN
-    dummyreal2 = abs(lonb(2)+10-lon(ix))
+  !IF ( abs(lonb(2)+10-lon(ix)) .lt. dummyreal2 )THEN
+    !dummyreal2 = abs(lonb(2)+10-lon(ix))
+  IF ( abs(lonb(2)+5-lon(ix)) .lt. dummyreal2 )THEN
+    dummyreal2 = abs(lonb(2)+5-lon(ix))
     indx2=ix
   ENDIF
 ENDDO
@@ -152,12 +157,16 @@ dummyreal1=99999999
 dummyreal2=99999999
 DO iy=1,domainsize_y
   lat(iy) = lat_first + lat_inc*(iy-1)
-  IF ( abs(latb(1)-10-lat(iy)) .lt. dummyreal1 )THEN
-    dummyreal1 = abs(latb(1)-10-lat(iy))
+  !IF ( abs(latb(1)-10-lat(iy)) .lt. dummyreal1 )THEN
+    !dummyreal1 = abs(latb(1)-10-lat(iy))
+  IF ( abs(latb(1)-5-lat(iy)) .lt. dummyreal1 )THEN
+    dummyreal1 = abs(latb(1)-5-lat(iy))
     indy1=iy
   ENDIF
-  IF ( abs(latb(2)+10-lat(iy)) .lt. dummyreal2 )THEN
-    dummyreal2 = abs(latb(2)+10-lat(iy))
+  !IF ( abs(latb(2)+10-lat(iy)) .lt. dummyreal2 )THEN
+    !dummyreal2 = abs(latb(2)+10-lat(iy))
+  IF ( abs(latb(2)+5-lat(iy)) .lt. dummyreal2 )THEN
+    dummyreal2 = abs(latb(2)+5-lat(iy))
     indy2=iy
   ENDIF
 ENDDO

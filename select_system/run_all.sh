@@ -1,17 +1,17 @@
 #!/bin/bash
 
 NPATH=`pwd`
-outfolder=../archive_Sea
+outfolder=../../archive_NWPac
 if [ ! -d ${outfolder} ]; then mkdir -p ${outfolder}; fi
 cp ./irt_tracks_mask_all.ctl ${outfolder}
 cp ./select_system.f90 ${outfolder}
 
-for exp in IMERG FV3 ARPNH MPAS NICAM IFS4KM IFS9KM ICON UM clean CMORPH; do
-#for exp in ICON;do
+for exp in IMERG FV3 ARPNH MPAS NICAM IFS4KM IFS9KM ICON UM clean CMORPH CWBGFS; do
   echo ${exp}
-  ln -sf ../archive/${exp}/irt_tracklinks_output.txt .
-  ln -sf ../archive/${exp}/irt_tracks_mask.dat .
-  ln -sf ../tracking_code/irt_parameters.f90 .
+  ln -sf ../../archive/${exp}/irt_tracklinks_output.txt .
+  ln -sf ../../archive/${exp}/irt_tracks_mask.dat .
+  #ln -sf ../../tracking_code/irt_parameters.f90 .
+  ln -sf ../../archive/irt_parameters.f90 .
 
   ./compile.sh
   ./select_system.x
