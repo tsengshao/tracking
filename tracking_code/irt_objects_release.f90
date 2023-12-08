@@ -561,7 +561,6 @@ END SUBROUTINE decrease_resolution
 SUBROUTINE four_connect(startX, startY, input_field, occupied, nowid,&
                         label_field, totarea, field_mean, field_min, field_max,&
                         COMx, COMy, delete_cell, xfirst, xlast, yfirst, ylast)
-
 USE irt_parameters, ONLY: n_fields, threshold, miss, llonlatgrid, &
                           unit_area, lat_first, lat_inc, lon_inc, &
                           lperiodic_x, lperiodic_y, domainsize_x, domainsize_y
@@ -587,7 +586,7 @@ INTEGER, PARAMETER :: nmove=4
 INTEGER, PARAMETER :: moveX(nmove)=(/0,0,-1,1/)
 INTEGER, PARAMETER :: moveY(nmove)=(/-1,1,0,0/)
 
-INTEGER             :: iox, ioy, imove, locx2, locy2, locx, locy
+INTEGER             :: iox, ioy, imove, locx2, locy2, locx, locy, fieldid
 
 IF(input_field(startX,startY,1) .lt. threshold .or. occupied(startX,startY)) then
   stop ' !!SUBROUTINE refill_obj !! ERROR : label_field(startX,startY) .le. 0 or occupied'
