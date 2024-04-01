@@ -10,7 +10,7 @@
 
 
 NPATH=`pwd`
-outfolder=../../archive_tropics192
+outfolder=../../archive_tropics
 if [ ! -d ${outfolder} ]; then mkdir -p ${outfolder}; fi
 cp ./irt_tracks_mask_all.ctl ${outfolder}
 cp ./select_system.f90 ${outfolder}

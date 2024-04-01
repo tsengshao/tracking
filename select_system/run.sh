@@ -10,6 +10,7 @@
 
 NPATH=`pwd`
 datafolder=../tracking_data
+datafolder=../select_data
 mkdir -p ${datafolder}
 
 # create ctl

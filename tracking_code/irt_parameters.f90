@@ -16,7 +16,7 @@ LOGICAL, PARAMETER    :: lperiodic_y = .FALSE.
 INTEGER, PARAMETER    :: n_fields = 1   ! number of additional averaging
 
 ! bins of coarse velocity field
-INTEGER, PARAMETER    :: time_steps = 912    ! total number of timesteps
+INTEGER, PARAMETER    :: time_steps = 720    ! total number of timesteps
 INTEGER, PARAMETER    :: nt_bins = 24         ! 24 hours
 INTEGER, PARAMETER    :: nx_bins = 10
 INTEGER, PARAMETER    :: ny_bins = 10

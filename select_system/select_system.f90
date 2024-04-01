@@ -36,7 +36,7 @@ INTEGER            :: nxout, nyout
 REAL, allocatable  :: trackmaskout(:,:)
 !REAL, parameter, DIMENSION(2) :: lonb=(/90.,235./), latb=(/-25.,25./)
 !REAL, parameter, DIMENSION(2) :: lonb=(/125,200/), latb=(/0.,25./)
-REAL, parameter, DIMENSION(2) :: lonb=(/0,360/), latb=(/-20.0001,20.0001/)
+REAL, parameter, DIMENSION(2) :: lonb=(/0,360/), latb=(/-25.0001,25.0001/)
 REAL               :: dummyreal1, dummyreal2
 INTEGER            :: reclraw, reclout
 INTEGER            :: it

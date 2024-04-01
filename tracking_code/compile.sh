@@ -4,7 +4,16 @@ set -ex
 # netcdf configure flag
 # ifort -o ooo.x ooo.f $(nc-config --fflags --flibs)
 
-COMPILE_COMMAND="ifort -no-wrap-margin -mcmodel=large -check bounds -debug all -traceback -g -shared-intel -free -heap-arrays 10 $(nc-config --fflags --flibs)"
+#https://docs.dkrz.de/doc/levante/code-development/compiling-and-linking.html#how-to-build-software-with-netcdf
+wlflag="-Wl,-rpath,/sw/spack-levante/netcdf-fortran-4.5.3-r5r3ev/lib"
+
+
+export I_MPI_PMI=pmi
+export I_MPI_PMI_LIBRARY=/usr/lib64/libpmi.so
+
+echo $(date +"%Y-%m-%d %H:%M:%S")
+
+COMPILE_COMMAND="mpiifort -free -no-wrap-margin -mcmodel=large -check bounds -debug all -traceback -g -shared-intel -free -heap-arrays 10 $(nc-config --fflags --flibs) ${wlflag}"
 #COMPILE_COMMAND='ifort -no-wrap-margin -mcmodel=large -C -debug all -traceback -shared-intel -free -heap-arrays 10'
 #COMPILE_COMMAND='ifort -no-wrap-margin -mcmodel=large -debug all -traceback -shared-intel -free -heap-arrays 10'
 #COMPILE_COMMAND='gfortran -g -C -O0 -mcmodel=large'
