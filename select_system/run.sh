@@ -33,9 +33,10 @@ echo ${ddmmyyyy}
 # copy select code ( remind the selected condiction )
 cp ./select_system.f90 ${datafolder}
 
-#ln -sf ../tracking_data/irt_tracklinks_output.txt .
-#ln -sf ../tracking_data/irt_tracks_mask.dat .
-#ln -sf ../tracking_code/irt_parameters.f90 .
+ln -sf ../tracking_data/irt_tracklinks_output.txt .
+ln -sf ../tracking_data/irt_tracks_mask.dat .
+ln -sf ../tracking_code/irt_parameters.f90 .
+ln -sf ../tracking_data/irt_objects_input_00 .
 
 ${COMPILE_COMMAND} -o select_system.x irt_parameters.f90 select_system.f90
 ./select_system.x
@@ -56,7 +57,7 @@ mv ./select_tracks_info.txt ${datafolder}
 mv ./lifemask.dat ${datafolder}
 mv ./subdomain_input.dat ${datafolder}
 
-rm -rf new_parameter.mod new_parameter.f90
+rm -rf new_parameter.mod new_parameter.f90 irt_objects_input_00
 rm -f irt_parameters.f90 irt_parameters.mod irt_tracklinks_output.txt irt_tracks_mask.dat
   
 
