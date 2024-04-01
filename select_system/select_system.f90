@@ -1,4 +1,4 @@
-PROGRAM select
+PROGRAM select_sys
 USE irt_parameters, ONLY: domainsize_x, domainsize_y, lperiodic_x, lperiodic_y, &
     miss, n_fields, lat_first, lat_inc, lon_inc, time_steps, max_length_of_track
 IMPLICIT NONE
@@ -199,6 +199,12 @@ write(50,*) 'index lon in raw data: indx1=',indx1, 'indx2=',indx2
 write(50,*) 'index lat in raw data: indy1=',indy1, 'indy2=',indy2
 close(50)
 
+print*, 'write grid info'
+CALL write_grid_info(indx2-indx1+1, indy2-indy1+1,&
+                     time_steps-1,  lon(indx1), lat(indy1),&
+                     lon_inc, lat_inc)
+
+
 allocate(trackmaskout(indx2-indx1+1, indy2-indy1+1))
 INQUIRE (IOLENGTH=reclraw) trackmask
 INQUIRE (IOLENGTH=reclout) trackmaskout
@@ -231,4 +237,38 @@ ENDDO !it
 CLOSE(10)
 CLOSE(20)
 
-ENDPROGRAM select
+ENDPROGRAM select_sys
+
+
+SUBROUTINE write_grid_info(nx, ny, nt, lon0, lat0, dlon, dlat)
+INTEGER, INTENT(IN) :: nx, ny, nt
+REAL, INTENT(IN)    :: lon0, lat0, dlon, dlat
+
+OPEN(40, FILE='irt_tracks_mask_select.ctl',&
+         FORM='formatted', ACTION='write')
+WRITE(40, *) "dset ^irt_tracks_mask_select.dat"
+WRITE(40, *) "undef -999000000.000000"
+write(40, *) 'xdef ',nx,'linear',lon0,dlon
+write(40, *) 'ydef ',ny,'linear',lat0,dlat
+WRITE(40, *) "zdef 1 levels 1000"
+WRITE(40, *) 'tdef ',nt,'linear OOXXTIMEXXOO 1hr'
+WRITE(40, *) "vars 1"
+WRITE(40, *) "id 0 99 track_id"
+WRITE(40, *) "endvars"
+CLOSE(40)
+
+OPEN(40, FILE='new_parameter.f90',&
+         FORM='formatted', ACTION='write')
+WRITE(40, *) 'MODULE new_parameter'
+WRITE(40, *) '! grid infomation of select data'
+WRITE(40, *) 'INTEGER, PARAMETER    :: domainsize_x =', nx
+WRITE(40, *) 'INTEGER, PARAMETER    :: domainsize_y =', ny
+WRITE(40, *) 'INTEGER, PARAMETER    :: time_steps =', nt
+WRITE(40, *) 'REAL,    PARAMETER    :: lon_first =', lon0
+WRITE(40, *) 'REAL,    PARAMETER    :: lat_first =', lat0
+WRITE(40, *) 'REAL,    PARAMETER    :: lon_inc =', dlon
+WRITE(40, *) 'REAL,    PARAMETER    :: lat_inc =', dlat
+WRITE(40, *) 'END MODULE new_parameter'
+close(40)
+
+ENDSUBROUTINE write_grid_info
