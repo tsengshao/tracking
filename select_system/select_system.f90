@@ -202,7 +202,8 @@ close(50)
 print*, 'write grid info'
 CALL write_grid_info(indx2-indx1+1, indy2-indy1+1,&
                      time_steps-1,  lon(indx1), lat(indy1),&
-                     lon_inc, lat_inc)
+                     lon_inc, lat_inc,&
+                     indx1, indx2, indy1, indy2)
 
 
 allocate(trackmaskout(indx2-indx1+1, indy2-indy1+1))
@@ -237,12 +238,40 @@ ENDDO !it
 CLOSE(10)
 CLOSE(20)
 
+
+! subdomain input
+fname_trackmask = 'irt_objects_input_00'
+fname_trackmask_out = 'subdomain_input.dat'
+OPEN(10,FILE=trim(fname_trackmask),FORM='unformatted',ACTION='read',access='direct',recl=reclraw)
+OPEN(20,FILE=trim(fname_trackmask_out),FORM='unformatted',ACTION='write',access='direct',recl=reclout)
+DO it=1,time_steps-1
+  READ(10,rec=it) trackmask(:,:)
+  WRITE(20,rec=it) trackmask(indx1:indx2, indy1:indy2)
+ENDDO
+CLOSE(10)
+CLOSE(20)
+
 ENDPROGRAM select_sys
 
 
-SUBROUTINE write_grid_info(nx, ny, nt, lon0, lat0, dlon, dlat)
+SUBROUTINE write_grid_info(nx, ny, nt, lon0, lat0,&
+                           dlon, dlat, idx1, idx2, idy1, idy2)
 INTEGER, INTENT(IN) :: nx, ny, nt
+INTEGER, INTENT(IN) :: idx1, idx2, idy1, idy2
 REAL, INTENT(IN)    :: lon0, lat0, dlon, dlat
+
+OPEN(40, FILE='subdomain_rain.ctl',&
+         FORM='formatted', ACTION='write')
+WRITE(40, *) "dset ^subdomain_input.dat"
+WRITE(40, *) "undef -999000000.000000"
+write(40, *) 'xdef ',nx,'linear',lon0,dlon
+write(40, *) 'ydef ',ny,'linear',lat0,dlat
+WRITE(40, *) "zdef 1 levels 1000"
+WRITE(40, *) 'tdef ',nt,'linear OOXXTIMEXXOO 1hr'
+WRITE(40, *) "vars 1"
+WRITE(40, *) "rain 0 99 rain"
+WRITE(40, *) "endvars"
+CLOSE(40)
 
 OPEN(40, FILE='irt_tracks_mask_select.ctl',&
          FORM='formatted', ACTION='write')
@@ -268,6 +297,10 @@ WRITE(40, *) 'REAL,    PARAMETER    :: lon_first =', lon0
 WRITE(40, *) 'REAL,    PARAMETER    :: lat_first =', lat0
 WRITE(40, *) 'REAL,    PARAMETER    :: lon_inc =', dlon
 WRITE(40, *) 'REAL,    PARAMETER    :: lat_inc =', dlat
+WRITE(40, *) 'INTEGER, PARAMETER    :: raw_idx1 =', idx1
+WRITE(40, *) 'INTEGER, PARAMETER    :: raw_idx2 =', idx2
+WRITE(40, *) 'INTEGER, PARAMETER    :: raw_idy1 =', idy1
+WRITE(40, *) 'INTEGER, PARAMETER    :: raw_idy2 =', idy2
 WRITE(40, *) 'END MODULE new_parameter'
 close(40)
 

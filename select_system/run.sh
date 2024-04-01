@@ -40,7 +40,9 @@ cp ./select_system.f90 ${datafolder}
 ${COMPILE_COMMAND} -o select_system.x irt_parameters.f90 select_system.f90
 ./select_system.x
 sed -i "s/OOXXTIMEXXOO/${ddmmyyyy}/" ./irt_tracks_mask_select.ctl
+sed -i "s/OOXXTIMEXXOO/${ddmmyyyy}/" ./subdomain_rain.ctl
 mv ./irt_tracks_mask_select.ctl ${datafolder}
+mv ./subdomain_rain.ctl ${datafolder}
 
 ${COMPILE_COMMAND} -o lifemask.x irt_parameters.f90 new_parameter.f90 lifemask.f90
 ./lifemask.x
@@ -52,6 +54,7 @@ mv ./irt_tracks_mask_select.dat ${datafolder}
 mv ./select_tracks_output.csv ${datafolder}
 mv ./select_tracks_info.txt ${datafolder}
 mv ./lifemask.dat ${datafolder}
+mv ./subdomain_input.dat ${datafolder}
 
 rm -rf new_parameter.mod new_parameter.f90
 rm -f irt_parameters.f90 irt_parameters.mod irt_tracklinks_output.txt irt_tracks_mask.dat
