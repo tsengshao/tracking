@@ -1,4 +1,12 @@
 #!/bin/bash
+#SBATCH --job-name=seletrack          # Specify job name
+#SBATCH --partition=shared     # Specify partition name
+#SBATCH --ntasks=1             # Specify max. number of tasks to be invoked
+#SBATCH --mem=10G              # Specify amount of memory needed
+#SBATCH --cpus-per-task=3      # Specify number of CPUs per task
+#SBATCH --time=08:00:00        # Set a limit on the total run time
+#SBATCH --account=bb1153       # Charge resources on this project account
+#SBATCH --output=select.o%j    # File name for standard output
 
 NPATH=`pwd`
 datafolder=../tracking_data

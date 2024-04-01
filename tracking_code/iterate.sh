@@ -1,12 +1,12 @@
 #!/bin/bash
-#SBATCH --job-name=0529          # Specify job name
+#SBATCH --job-name=dytrack          # Specify job name
 #SBATCH --partition=shared     # Specify partition name
 #SBATCH --ntasks=1             # Specify max. number of tasks to be invoked
+#SBATCH --mem=10G              # Specify amount of memory needed
 #SBATCH --cpus-per-task=3      # Specify number of CPUs per task
 #SBATCH --time=08:00:00        # Set a limit on the total run time
-#SBATCH --account=bm0982       # Charge resources on this project account
-#SBATCH --output=track0529.o%j    # File name for standard output
-#SBATCH --error=track0529.o%j     # File name for standard error output
+#SBATCH --account=bb1153       # Charge resources on this project account
+#SBATCH --output=dytrack.o%j    # File name for standard output
 
 set -ex
 
