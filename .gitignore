@@ -1,4 +1,6 @@
 **/*.x
 **/*.mod
 **/*.a
-/tracking_data/
+tracking_data
+select_data
+*.o*

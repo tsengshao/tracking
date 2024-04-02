@@ -260,7 +260,7 @@ INTEGER, INTENT(IN) :: nx, ny, nt
 INTEGER, INTENT(IN) :: idx1, idx2, idy1, idy2
 REAL, INTENT(IN)    :: lon0, lat0, dlon, dlat
 
-OPEN(40, FILE='subdomain_rain.ctl',&
+OPEN(40, FILE='subdomain_input.ctl',&
          FORM='formatted', ACTION='write')
 WRITE(40, *) "dset ^subdomain_input.dat"
 WRITE(40, *) "undef -999000000.000000"
